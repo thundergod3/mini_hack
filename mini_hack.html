@@ -8,50 +8,50 @@
     <title>Document</title>
     <script src="http://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
     <div id='container'>
-        <h3>ScoreKeeper</h3>
-        <hr>
+        <h3 class="text-center">ScoreKeeper</h3>
+        <hr class="w-50">
         <div id=container_item>
-            <div class="item">
-                <input id='player1' type="text">Player 1
-            </div>
-            <div class="item">
-                <input id='player2' type="text">Player 2
-            </div>
-            <div class="item">
-                <input id='player3' type="text">Player 3
-            </div>
-            <div class="item">
-                <input id='player4' type="text">Player 4
-            </div>
+            <form action="/create" method="POST">
+                <div class="item">
+                    <input name='p1' type="text" class="form-control w-50 mx-auto border border-danger mb-4"
+                        placeholder="Player 1">
+                </div>
+                <div class="item">
+                    <input name='p2' type="text" class="form-control w-50 mx-auto border border-danger mb-4"
+                        placeholder="Player 2">
+                </div>
+                <div class="item">
+                    <input name='p3' type="text" class="form-control w-50 mx-auto border border-danger mb-4"
+                        placeholder="Player 3">
+                </div>
+                <div class="item">
+                    <input name='p4' type="text" class="form-control w-50 mx-auto border border-danger mb-4"
+                        placeholder="Player 4">
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" id="create" class="btn btn-danger btn-lg">CREATE NEW GAME</button>
+                </div>
+            </form>
         </div>
-        
-        <button type="button" id = "create">creat new game</button>
     </div>
 
-    <script>
-
-        $("#create").on("click", function(event){
-        let player1 = document.getElementById("player1").value;
-        let player2 = document.getElementById("player2").value;
-        let player3 = document.getElementById("player3").value;
-        let player4 = document.getElementById("player4").value;
-        let players = {player1, player2, player3, player4};
-        console.log(players)
-            $.ajax({
-                url: "/create",
-                type: "POST",
-                data: players,
-                success: function(data){
-                    console.log("Success");
-                    window.location.href = '/player_results'
-                }
-            })
-        })
-    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>

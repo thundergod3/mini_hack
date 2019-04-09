@@ -2,54 +2,96 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
+const DataModel = require('./models/players_data');
+
+mongoose.connect('mongodb://localhost:27017/web20_mini_hack', { useNewUrlParser: true }, (err) => {
+    if (err) console.log(err);
+    else console.log("Connect to DB success");
+    DataModel.find({}, (err, docs) => {
+        if (err) console.log(err);
+        else {
+            console.log(docs)
+            
+        }
+
+    })
+});
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get("/player_results", function(req, res){
-    res.sendfile(__dirname + "/player_results.html")
+app.get("/player_results/:id", function (req, res) {
+    res.sendFile(__dirname + "/player_results.html")
 })
 
-app.get("/", function(req, res){
+app.get("/", function (req, res) {
     res.sendFile(__dirname + "/mini_hack.html");
 })
+
 app.post("/create", function (req, res) {
-    const name_player = JSON.parse(fs.readFileSync('player_data.json', 'utf-8'));
-    const player_result = JSON.parse(fs.readFileSync('player_round.json', 'utf-8'));
-
-    var player = {
-        player1 : req.body.player1,
-        player2 : req.body.player2,
-        player3 : req.body.player3,
-        player4 : req.body.player4,
-        id : name_player.length
-    };
-
-    var results = {
-        id: name_player.length,
-    };
-
-    player_result.push(results);
-    fs.writeFileSync('player_round.json', JSON.stringify(player_result));
-
-    name_player.push(player);
-    fs.writeFileSync('player_data.json', JSON.stringify(name_player));
-
-    res.redirect('/player_results')
+    let player = req.body;
+    DataModel.create({
+        players: [player.p1, player.p2, player.p3, player.p4],
+        score: [[0, 0, 0, 0]]
+    }, (err, roomCreated) => {
+        if (err) console.log(err)
+        else {
+            res.redirect(`/player_results/${roomCreated._id}`)
+        }
+    })
 });
+app.get("/addRound/:id", (req, res) => {
+    let id = req.params.id;
 
-app.post('/change_results1', function(req, res) {
-    const name_player = JSON.parse(fs.readFileSync('player_data.json', 'utf-8'));
-    const player1_result = JSON.parse(fs.readFileSync('player_round.json', 'utf-8'));
-    var change_player1 = {
-        round1 : [req.body]
-    };
-    player1_result.push(change_player1);
-    fs.writeFileSync('player_round.json', JSON.stringify(player1_result));
-    res.send(req.body)
+
+    DataModel.findById(id, (err, game) => {
+        if (err) console.log(err)
+        else {
+            game.score.push([0, 0, 0, 0]);
+            DataModel.findByIdAndUpdate(
+                game._id,
+                { $set: { score: game.score } },
+                (err, changed) => {
+                    if (err) console.log(err);
+                    else res.send(changed);
+                }
+            )
+        }
+    })
 })
+app.get("/resultdata/:id", (req, res) => {
+    console.log(req.params.id)
+    DataModel.findById(req.params.id, (err, data) => {
+        if (err) console.log(err)
+        else res.send(data)
+    })
+})
+app.put("/update", (req, res) => {
+    let id = req.body['gameid'];
+    console.log(id);
+    
+    let round = req.body['round'];
+    let score = req.body['score[]'];
+    console.log(score)
 
-app.listen(8080, function (err) {
+    DataModel.findById(id, (err, game) => {
+        if (err) console.log(err)
+        else {
+            game.score[round * 1] = score;
+            DataModel.findByIdAndUpdate(
+                game._id,
+                { $set: { score: game.score } },
+                (err, changed) => {
+                    if (err) console.log(err);
+                    else res.send(changed);
+                }
+            )
+        }
+    })
+
+})
+app.listen(6969, function (err) {
     if (err) console.log(err)
     else console.log("Sever success !!");
 });

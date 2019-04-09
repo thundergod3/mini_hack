@@ -7,54 +7,130 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="http://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>Document</title>
 </head>
 
 <body>
-    <div id='container'>
-        <div id='container_round'>
-
-        </div>
+    <table id="table" class="table table-striped">
+        <tr>
+            <td id="sum" class="bg-white"></td>
+            <td id="p1" class="bg-white"></td>
+            <td id="p2" class="bg-white"></td>
+            <td id="p3" class="bg-white"></td>
+            <td id="p4" class="bg-white"></td>
+        </tr>
+        <tr>
+            <td class="bg-danger">Sum of score(0)</td>
+            <td id="sum1" class="bg-danger"></td>
+            <td id="sum2" class="bg-danger"></td>
+            <td id="sum3" class="bg-danger"></td>
+            <td id="sum4" class="bg-danger"></td>
+        </tr>
+    </table>
+    <hr>
+    <div class="text-center">
+        <button id='add_ground' class="btn btn-danger btn-lg">ADD GROUND</button>
     </div>
-
-    <button id='add_ground'>ADD GROUND</button>
-
     <script>
-        let container = document.getElementById('container');
-        let newGround = document.getElementById('add_ground');
-        let line = 0
+        let url = window.location.href.split("/")
+        console.log(url);
 
-        newGround.addEventListener('click', addGround)
-
-        function addGround() {
-            line += 1;
-            let groundHTML = `
-                <div class='container_round'>
-                    <input id='player1_round${line}' type='number'>Player 1</input>
-                    <input id='player2_round${line}' type='number'>Player 2</input>
-                    <input id='player3_round${line}' type='number'>Player 3</input>
-                    <input id='player4_round${line}' type='number'>Player 4</input>
-                </div>
-            `;
-
-            container.insertAdjacentHTML('beforeend', groundHTML)
-
-            const changeResultPlayer1 = document.getElementById(`player1_round${line}`);
-
-            changeResultPlayer1.addEventListener('change', changeResult1);
-
-            function changeResult1() {
-                let result1 = document.getElementById(`player1_round${line}`).value;
-                $.ajax({
-                    url: 'change_results1',
-                    type: 'POST',
-                    data: {result1},
-                    success: function (data) {
-                        
-                    }
-                })
+        let id = url[url.length - 1]
+        let nRound;
+        console.log(id)
+        $.ajax({
+            url: `/resultdata/${id}`,
+            success: function (data) {
+                console.log(data)
+                for (let i = 0; i < 4; i++) {
+                    $(`#p${i + 1}`).text(data.players[i])
+                }
+                let rounds = data.score.length;
+                nRound = data.score.length;
+                let sum1 = 0;
+                let sum2 = 0;
+                let sum3 = 0;
+                let sum4 = 0;
+                for (let j = 0; j < rounds; j++) {
+                    sum1 += data.score[j][0];
+                    sum2 += data.score[j][1];
+                    sum3 += data.score[j][2];
+                    sum4 += data.score[j][3];
+                }
+                $('#sum1').text(sum1);
+                $('#sum2').text(sum2);
+                $('#sum3').text(sum3);
+                $('#sum4').text(sum4);
+                for (let i = 0; i < rounds; i++) {
+                    $("#table").append(
+                        `<tr>
+                            <td>Round ${i + 1}</td> 
+                            <td><input type = "number" value = "${data.score[i][0]}" id = "r${i}p1" round = "${i}" class="form-control w-25"></td>  
+                            <td><input type = "number" value = "${data.score[i][1]}" id = "r${i}p2" round = "${i}" class="form-control w-25"></td> 
+                            <td><input type = "number" value = "${data.score[i][2]}" id = "r${i}p3" round = "${i}" class="form-control w-25"></td> 
+                            <td><input type = "number" value = "${data.score[i][3]}" id = "r${i}p4" round = "${i}" class="form-control w-25"></td>  
+                        </tr>`
+                    )
+                }
             }
-        };
+        })
+        $(document).on('change', 'input', function () {
+            let roundid = $(this).attr('round');
+            let p1 = Number($("#r" + roundid + "p1").val());
+            let p2 = Number($("#r" + roundid + "p2").val());
+            let p3 = Number($("#r" + roundid + "p3").val());
+            let p4 = Number($("#r" + roundid + "p4").val());
+            let data = {
+                score: [p1, p2, p3, p4],
+                round: roundid,
+                gameid: id
+            }
+            $.ajax({
+                url: '/update',
+                type: 'put',
+                data: data,
+                success: function (data) {
+                    console.log('updated');
+                    let rounds = data.score.length;
+                    let sum1 = 0;
+                    let sum2 = 0;
+                    let sum3 = 0;
+                    let sum4 = 0;
+                    for (let j = 0; j < rounds; j++) {
+                        sum1 += data.score[j][0];
+                        sum2 += data.score[j][1];
+                        sum3 += data.score[j][2];
+                        sum4 += data.score[j][3];
+                    }
+                    $('#sum1').text(sum1);
+                    $('#sum2').text(sum2);
+                    $('#sum3').text(sum3);
+                    $('#sum4').text(sum4);
+                }
+            })
+        })
+        $(document).on('click', 'button', function () {
+            nRound++;
+            $("#table").append(
+                `<tr>
+                    <td>Round ${nRound}</td> 
+                    <td><input type = "number" value = "0" id = "r${nRound}p1" round = "${nRound}" class="w-25"></td>  
+                    <td><input type = "number" value = "0" id = "r${nRound}p2" round = "${nRound}" class="w-25"></td> 
+                    <td><input type = "number" value = "0" id = "r${nRound}p3" round = "${nRound}" class="w-25"></td> 
+                    <td><input type = "number" value = "0" id = "r${nRound}p4" round = "${nRound}" class="w-25"></td>  
+                </tr>`
+            )
+            $.ajax({
+                url: `/addRound/${id}`,
+                type: "GET",
+                success: function (data) {
+                    console.log('round updated')
+                }
+            })
+        })
     </script>
 </body>
 
